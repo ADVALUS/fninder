@@ -12,6 +12,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,8 +42,14 @@ public class MainActivity extends AppCompatActivity {
         filter.addDataScheme("package");
         registerReceiver(packageChangeReceiver, filter);
 
-        // Display the last 5 recently installed non-system apps on the screen
-        updateResultTextView();
+        Button refreshButton = findViewById(R.id.refreshButton);
+        refreshButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // When the refresh button is clicked, update the result TextView
+                updateResultTextView();
+            }
+        });
     }
 
     // Get the installation time of the app
