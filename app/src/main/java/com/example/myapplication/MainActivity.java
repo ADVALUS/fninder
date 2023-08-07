@@ -5,6 +5,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
         filter.addDataScheme("package");
         registerReceiver(packageChangeReceiver, filter);
 
-        // Display the last 5 recently installed apps on the screen
+        // Display the last 5 recently installed non-system apps on the screen
         updateResultTextView();
     }
 
@@ -73,9 +74,9 @@ public class MainActivity extends AppCompatActivity {
         databaseHelper.saveInstallationTimeAndAppName(packageName, installationTime, appName);
     }
 
-    // Update the result TextView with the last 5 recently installed apps
+    // Update the result TextView with the last 5 recently installed non-system apps
     private void updateResultTextView() {
-        List<AppInfo> recentlyInstalledApps = getRecentlyInstalledApps(getApplicationContext());
+        List<AppInfo> recentlyInstalledApps = getRecentlyInstalledNonSystemApps(getApplicationContext());
 
         // Display the result on the screen
         StringBuilder resultBuilder = new StringBuilder();
@@ -87,8 +88,8 @@ public class MainActivity extends AppCompatActivity {
         resultTextView.setText(resultBuilder.toString());
     }
 
-    // Get the last 5 recently installed apps
-    private List<AppInfo> getRecentlyInstalledApps(Context context) {
+    // Get the last 5 recently installed non-system apps
+    private List<AppInfo> getRecentlyInstalledNonSystemApps(Context context) {
         List<AppInfo> appInfoList = new ArrayList<>();
         PackageManager packageManager = context.getPackageManager();
         Intent intent = new Intent(Intent.ACTION_MAIN, null);
@@ -99,17 +100,19 @@ public class MainActivity extends AppCompatActivity {
         int count = 0;
         for (PackageInfo packageInfo : packageInfoList) {
             String packageName = packageInfo.packageName;
-            long installationTime = packageInfo.firstInstallTime;
-            String appName = getAppName(context, packageName);
+            ApplicationInfo appInfo = packageInfo.applicationInfo;
 
-            // Skip the current app's information (your own app)
-            if (!packageName.equals(context.getPackageName())) {
+            // Skip system apps and the current app's information (your own app)
+            if ((appInfo.flags & ApplicationInfo.FLAG_SYSTEM) == 0 && !packageName.equals(context.getPackageName())) {
+                long installationTime = packageInfo.firstInstallTime;
+                String appName = getAppName(context, packageName);
+
                 saveInstallationTimeAndAppName(context, packageName, installationTime, appName);
                 appInfoList.add(new AppInfo(appName, installationTime));
                 count++;
 
-                if (count == 10) {
-                    break; // Limit the list to the last 5 recently installed apps
+                if (count == 5) {
+                    break; // Limit the list to the last 5 recently installed non-system apps
                 }
             }
         }
