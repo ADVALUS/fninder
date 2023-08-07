@@ -30,7 +30,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    void saveInstallationTimeAndAppName(long installationTime, String appName) {
+    void saveInstallationTimeAndAppName(String packageName, long installationTime, String appName) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues contentValues = new ContentValues();
         contentValues.put(COL_INSTALL_TIME, installationTime);
